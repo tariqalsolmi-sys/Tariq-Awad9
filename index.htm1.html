@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>عدّاد التاكسي</title>
+</head>
+<body style="margin:0">
+
+<div id="app" dir="rtl" lang="ar">
+  <header class="hdr">
+    <div class="logo">🚕</div>
+    <h1>عدّاد التاكسي</h1>
+    <p>احسب تسعيرة مشوارك: المسافة، الزحمة، والوجهة — كلها في مكان واحد</p>
+  </header>
+
+  <section class="card">
+    <div class="route">
+      <div class="field">
+        <label>📍 من</label>
+        <input id="from" type="text" placeholder="مثال: حي النزهة">
+      </div>
+      <div class="arrow">⬇</div>
+      <div class="field">
+        <label>🏁 إلى (الوجهة)</label>
+        <input id="to" type="text" placeholder="مثال: المطار الدولي">
+      </div>
+    </div>
+  </section>
+
+  <section class="card meter-card">
+    <div class="display">
+      <div class="amount" id="totalDisplay">0.00</div>
+      <div class="cur">ر.س</div>
+    </div>
+    <div class="trip-line" id="tripLine">حدّد منطقة الانطلاق والوجهة…</div>
+    <div class="stats">
+      <div class="stat"><span class="num" id="distVal">0.00</span><small>المسافة (كم)</small></div>
+      <div class="stat"><span class="num" id="jamVal">0.0</span><small>الزحمة (دقيقة)</small></div>
+      <div class="stat"><span class="num" id="timeVal">00:00</span><small>مدة المشوار</small></div>
+    </div>
+    <div class="controls">
+      <button id="startBtn" class="btn primary">▶ ابدأ العدّاد</button>
+      <button id="jamBtn" class="btn warn">🚦 الزحمة: مطفأة</button>
+      <button id="resetBtn" class="btn">↺ تصفير</button>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>التسعيرة</h2>
+    <div class="grid3">
+      <div class="field"><label>تعرفة الافتتاح (ر.س)</label><input id="baseFare" type="number" value="10" min="0" step="0.5"></div>
+      <div class="field"><label>سعر الكيلومتر (ر.س)</label><input id="perKm" type="number" value="2.5" min="0" step="0.1"></div>
+      <div class="field"><label>سعر دقيقة الزحمة (ر.س)</label><input id="perMin" type="number" value="0.5" min="0" step="0.1"></div>
+    </div>
+    <div class="sliders">
+      <label>المسافة: <b id="distSliderVal">0.0</b> كم</label>
+      <input id="distSlider" type="range" min="0" max="100" step="0.5" value="0">
+      <label>زمن الزحمة: <b id="jamSliderVal">0</b> دقيقة</label>
+      <input id="jamSlider" type="range" min="0" max="120" step="1" value="0">
+    </div>
+    <p class="hint">💡 شغّل العدّاد لمحاكاة مشوار حقيقي، أو حرّك المنزلقات لحساب يدوي فوري.</p>
+  </section>
+
+  <section class="card receipt">
+    <h2>🧾 تفاصيل الفاتورة</h2>
+    <div class="row"><span>من</span><b id="rFrom">—</b></div>
+    <div class="row"><span>إلى</span><b id="rTo">—</b></div>
+    <div class="row"><span>تعرفة الافتتاح</span><b id="rBase">0.00 ر.س</b></div>
+    <div class="row"><span>المسافة</span><b id="rDist">0.00 ر.س</b></div>
+    <div class="row"><span>الزحمة</span><b id="rJam">0.00 ر.س</b></div>
+    <div class="row total"><span>الإجمالي المستحق</span><b id="rTotal">0.00 ر.س</b></div>
+  </section>
+</div>
+
+<style>
+  #app, #app * { box-sizing: border-box; margin: 0; padding: 0; }
+  #app {
+    font-family: Tahoma, "Segoe UI", Arial, sans-serif;
+    background: linear-gradient(160deg, #0f172a 0%, #1e293b 60%, #0f172a 100%);
+    color: #e2e8f0; min-height: 100vh; padding: 20px 16px 40px;
+    max-width: 560px; margin: 0 auto;
+  }
+  .hdr { text-align: center; margin-bottom: 18px; }
+  .logo { font-size: 44px; }
+  .hdr h1 { font-size: 26px; color: #fbbf24; margin: 6px 0 4px; }
+  .hdr p { font-size: 13px; color: #94a3b8; }
+  .card {
+    background: rgba(30, 41, 59, .85); border: 1px solid #334155;
+    border-radius: 16px; padding: 16px; margin-bottom: 14px;
+    box-shadow: 0 8px 24px rgba(0,0,0,.25);
+  }
+  .card h2 { font-size: 16px; color: #fbbf24; margin-bottom: 12px; }
+  .field { display: flex; flex-direction: column; gap: 6px; flex: 1; }
+  .field label { font-size: 12px; color: #94a3b8; }
+  .field input {
+    background: #0f172a; border: 1px solid #475569; border-radius: 10px;
+    color: #e2e8f0; padding: 10px 12px; font-size: 15px; font-family: inherit; width: 100%;
+  }
+  .field input:focus { outline: none; border-color: #fbbf24; }
+  .route { display: flex; flex-direction: column; gap: 4px; }
+  .arrow { text-align: center; color: #fbbf24; font-size: 18px; }
+  .meter-card { text-align: center; }
+  .display {
+    display: flex; align-items: baseline; justify-content: center; gap: 8px;
+    background: #052e16; border: 2px solid #16a34a; border-radius: 14px;
+    padding: 18px 10px; margin-bottom: 10px;
+    box-shadow: inset 0 0 24px rgba(22,163,74,.25);
+  }
+  .amount {
+    font-family: "Courier New", monospace; font-size: 46px; font-weight: bold;
+    color: #4ade80; letter-spacing: 2px; direction: ltr;
+  }
+  .cur { color: #4ade80; font-size: 18px; font-weight: bold; }
+  .trip-line { font-size: 13px; color: #94a3b8; margin-bottom: 12px; min-height: 18px; }
+  .stats { display: flex; gap: 10px; margin-bottom: 14px; }
+  .stat {
+    flex: 1; background: #0f172a; border: 1px solid #334155; border-radius: 12px;
+    padding: 10px 6px; display: flex; flex-direction: column; gap: 4px;
+  }
+  .stat .num { font-size: 20px; font-weight: bold; color: #f8fafc; font-family: "Courier New", monospace; direction: ltr; }
+  .stat small { font-size: 11px; color: #94a3b8; }
+  .controls { display: flex; gap: 8px; }
+  .btn {
+    flex: 1; border: none; border-radius: 12px; padding: 12px 6px;
+    font-size: 14px; font-weight: bold; cursor: pointer; font-family: inherit;
+    background: #334155; color: #e2e8f0; transition: transform .1s;
+  }
+  .btn:active { transform: scale(.97); }
+  .btn.primary { background: #16a34a; color: #fff; }
+  .btn.warn { background: #475569; color: #e2e8f0; }
+  .btn.warn.active { background: #dc2626; color: #fff; }
+  .grid3 { display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+  .grid3 .field { min-width: 30%; flex: 1; }
+  .sliders { display: flex; flex-direction: column; gap: 8px; }
+  .sliders label { font-size: 13px; color: #cbd5e1; }
+  .sliders b { color: #fbbf24; }
+  .sliders input[type=range] { width: 100%; accent-color: #fbbf24; }
+  .hint { font-size: 12px; color: #64748b; margin-top: 10px; }
+  .receipt .row {
+    display: flex; justify-content: space-between; padding: 8px 2px;
+    border-bottom: 1px dashed #334155; font-size: 14px; color: #cbd5e1;
+  }
+  .receipt .row b { color: #f8fafc; direction: ltr; }
+  .receipt .row.total { border-bottom: none; margin-top: 6px; font-size: 16px; }
+  .receipt .row.total span { color: #fbbf24; font-weight: bold; }
+  .receipt .row.total b { color: #4ade80; font-size: 20px; font-family: "Courier New", monospace; }
+</style>
+
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var state = { running: false, jam: false, dist: 0, jamSec: 0, tripSec: 0, timer: null };
+  var fmt = function (n) { return n.toFixed(2); };
+
+  function fares() {
+    return {
+      base: parseFloat($('baseFare').value) || 0,
+      km: parseFloat($('perKm').value) || 0,
+      min: parseFloat($('perMin').value) || 0
+    };
+  }
+
+  function calc() {
+    var f = fares();
+    var jamMin = state.jamSec / 60;
+    var distCost = state.dist * f.km;
+    var jamCost = jamMin * f.min;
+    var total = f.base + distCost + jamCost;
+
+    $('totalDisplay').textContent = fmt(total);
+    $('distVal').textContent = fmt(state.dist);
+    $('jamVal').textContent = jamMin.toFixed(1);
+    var m = String(Math.floor(state.tripSec / 60)).padStart(2, '0');
+    var s = String(state.tripSec % 60).padStart(2, '0');
+    $('timeVal').textContent = m + ':' + s;
+
+    var from = $('from').value.trim(), to = $('to').value.trim();
+    $('tripLine').textContent = (from || to) ? ('المشوار: ' + (from || '—') + ' ← ' + (to || '—')) : 'حدّد منطقة الانطلاق والوجهة…';
+    $('rFrom').textContent = from || '—';
+    $('rTo').textContent = to || '—';
+    $('rBase').textContent = fmt(f.base) + ' ر.س';
+    $('rDist').textContent = fmt(state.dist) + ' كم × ' + fmt(f.km) + ' = ' + fmt(distCost) + ' ر.س';
+    $('rJam').textContent = jamMin.toFixed(1) + ' د × ' + fmt(f.min) + ' = ' + fmt(jamCost) + ' ر.س';
+    $('rTotal').textContent = fmt(total) + ' ر.س';
+
+    $('distSlider').value = Math.min(state.dist, 100);
+    $('distSliderVal').textContent = fmt(state.dist);
+    $('jamSlider').value = Math.round(jamMin);
+    $('jamSliderVal').textContent = jamMin.toFixed(1);
+  }
+
+  function stopTimer() {
+    if (state.timer) { clearInterval(state.timer); state.timer = null; }
+    state.running = false;
+    $('startBtn').textContent = '▶ ابدأ العدّاد';
+  }
+
+  function tick() {
+    state.tripSec++;
+    state.dist += 0.03; /* محاكاة مسافة ~108 كم/س */
+    if (state.jam) state.jamSec++;
+    calc();
+  }
+
+  $('startBtn').onclick = function () {
+    if (state.running) { stopTimer(); $('startBtn').textContent = '▶ متابعة'; return; }
+    state.running = true;
+    $('startBtn').textContent = '⏸ إيقاف مؤقت';
+    state.timer = setInterval(tick, 1000);
+  };
+
+  $('jamBtn').onclick = function () {
+    state.jam = !state.jam;
+    this.textContent = state.jam ? '🚦 الزحمة: تعمل' : '🚦 الزحمة: مطفأة';
+    this.classList.toggle('active', state.jam);
+  };
+
+  $('resetBtn').onclick = function () {
+    stopTimer();
+    state.jam = false;
+    state.dist = 0; state.jamSec = 0; state.tripSec = 0;
+    $('jamBtn').textContent = '🚦 الزحمة: مطفأة';
+    $('jamBtn').classList.remove('active');
+    calc();
+  };
+
+  function manualInput() { stopTimer(); calc(); }
+  $('distSlider').oninput = function () { state.dist = parseFloat(this.value); manualInput(); };
+  $('jamSlider').oninput = function () { state.jamSec = parseFloat(this.value) * 60; manualInput(); };
+  ['baseFare', 'perKm', 'perMin', 'from', 'to'].forEach(function (id) {
+    $(id).oninput = calc;
+  });
+
+  calc();
+})();
+</script>
+
+</body>
+</html>
